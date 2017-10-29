@@ -1,0 +1,48 @@
+diff --git a/assets/css/application.scss b/assets/css/application.scss
+index fbe3ae5..12b0431 100644
+--- a/assets/css/application.scss
++++ b/assets/css/application.scss
+@@ -22,7 +22,7 @@
+   background-color: transparent;
+   background-image: url('/images/wink.png'); /* fallback */
+   background-image: url('/images/wink.svg'), none;
+-  background-position: -44px center;
++  background-position: 0 center;
+   background-repeat: no-repeat;
+   border: 2px solid transparent;
+   border-radius: 0.25em;
+@@ -40,7 +40,7 @@
+ }
+ 
+ .hideShowPassword-toggle-hide {
+-  background-position: 0 center;
++  background-position: -44px center;
+ }
+ 
+ .hideShowPassword-toggle:hover,
+diff --git a/lib/cr_web/schemas/registration_form.ex b/lib/cr_web/schemas/registration_form.ex
+index 929fd34..46dbcd0 100644
+--- a/lib/cr_web/schemas/registration_form.ex
++++ b/lib/cr_web/schemas/registration_form.ex
+@@ -12,6 +12,9 @@ defmodule CrWeb.Schemas.RegistrationForm do
+   end
+   
+   @doc false
++  def changeset(registration_form, attrs, skip_validation), do: change(registration_form, attrs)
++  
++  @doc false
+   def changeset(registration_form \\ %RegistrationForm{}, skip_validation \\ false) do
+     get_changeset(registration_form, skip_validation)
+   end
+@@ -24,10 +27,7 @@ defmodule CrWeb.Schemas.RegistrationForm do
+   end
+   
+   @doc false
+-  defp get_changeset(registration_form, true) do
+-    registration_form
+-    |> change()
+-  end
++  defp get_changeset(registration_form, true), do: change(registration_form)
+ 
+   @doc false
+   def register(registration_form \\ %RegistrationForm{}, attrs) do
