@@ -1,48 +1,141 @@
-diff --git a/assets/css/application.scss b/assets/css/application.scss
-index fbe3ae5..12b0431 100644
---- a/assets/css/application.scss
-+++ b/assets/css/application.scss
-@@ -22,7 +22,7 @@
-   background-color: transparent;
-   background-image: url('/images/wink.png'); /* fallback */
-   background-image: url('/images/wink.svg'), none;
--  background-position: -44px center;
-+  background-position: 0 center;
-   background-repeat: no-repeat;
-   border: 2px solid transparent;
-   border-radius: 0.25em;
-@@ -40,7 +40,7 @@
- }
+diff --git a/package.json b/package.json
+index ea9ed93..89651c4 100644
+--- a/package.json
++++ b/package.json
+@@ -70,7 +70,7 @@
+     "service-hub": "^0.7.4",
+     "sinon": "1.17.4",
+     "temp": "^0.8.3",
+-    "text-buffer": "13.8.2",
++    "text-buffer": "13.8.3",
+     "typescript-simple": "1.0.0",
+     "underscore-plus": "^1.6.6",
+     "winreg": "^1.2.1",
+diff --git a/spec/text-editor-spec.js b/spec/text-editor-spec.js
+index 79b1e37..fa84067 100644
+--- a/spec/text-editor-spec.js
++++ b/spec/text-editor-spec.js
+@@ -1077,6 +1077,20 @@ describe('TextEditor', () => {
+         expect(editor.getCursorBufferPosition()).toEqual([0, 1])
+       })
  
- .hideShowPassword-toggle-hide {
--  background-position: 0 center;
-+  background-position: -44px center;
- }
++      it('stops at camelCase boundaries with non-ascii characters', () => {
++        editor.setText(' gétÁrevìôüsWord\n')
++        editor.setCursorBufferPosition([0, 16])
++
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 12])
++
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 4])
++
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 1])
++      })
++
+       it('skips consecutive non-word characters', () => {
+         editor.setText('e, => \n')
+         editor.setCursorBufferPosition([0, 6])
+@@ -1102,6 +1116,21 @@ describe('TextEditor', () => {
+         expect(editor.getCursorBufferPosition()).toEqual([0, 2])
+       })
  
- .hideShowPassword-toggle:hover,
-diff --git a/lib/cr_web/schemas/registration_form.ex b/lib/cr_web/schemas/registration_form.ex
-index 929fd34..46dbcd0 100644
---- a/lib/cr_web/schemas/registration_form.ex
-+++ b/lib/cr_web/schemas/registration_form.ex
-@@ -12,6 +12,9 @@ defmodule CrWeb.Schemas.RegistrationForm do
-   end
-   
-   @doc false
-+  def changeset(registration_form, attrs, skip_validation), do: change(registration_form, attrs)
-+  
-+  @doc false
-   def changeset(registration_form \\ %RegistrationForm{}, skip_validation \\ false) do
-     get_changeset(registration_form, skip_validation)
-   end
-@@ -24,10 +27,7 @@ defmodule CrWeb.Schemas.RegistrationForm do
-   end
-   
-   @doc false
--  defp get_changeset(registration_form, true) do
--    registration_form
--    |> change()
--  end
-+  defp get_changeset(registration_form, true), do: change(registration_form)
++      it('skips consecutive uppercase non-ascii letters', () => {
++        editor.setText(' ÀÁÅDF \n')
++        editor.setCursorBufferPosition([0, 7])
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 6])
++
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 1])
++
++        editor.setText('ALPhA\n')
++        editor.setCursorBufferPosition([0, 4])
++        editor.moveToPreviousSubwordBoundary()
++        expect(editor.getCursorBufferPosition()).toEqual([0, 2])
++      })
++
+       it('skips consecutive numbers', () => {
+         editor.setText(' 88 \n')
+         editor.setCursorBufferPosition([0, 4])
+diff --git a/src/cursor.js b/src/cursor.js
+index 10bdef8..181eeb9 100644
+--- a/src/cursor.js
++++ b/src/cursor.js
+@@ -454,23 +454,25 @@ class Cursor extends Model {
+   getPreviousWordBoundaryBufferPosition (options = {}) {
+     const currentBufferPosition = this.getBufferPosition()
+     const previousNonBlankRow = this.editor.buffer.previousNonBlankRow(currentBufferPosition.row)
+-    const scanRange = [[previousNonBlankRow || 0, 0], currentBufferPosition]
++    const scanRange = Range(Point(previousNonBlankRow || 0, 0), currentBufferPosition)
  
-   @doc false
-   def register(registration_form \\ %RegistrationForm{}, attrs) do
+-    let beginningOfWordPosition
+-    this.editor.backwardsScanInBufferRange(options.wordRegex || this.wordRegExp(), scanRange, ({range, stop}) => {
++    const ranges = this.editor.buffer.findAllInRangeSync(
++      options.wordRegex || this.wordRegExp(),
++      scanRange
++    )
++
++    const range = ranges[ranges.length - 1]
++    if (range) {
+       if (range.start.row < currentBufferPosition.row && currentBufferPosition.column > 0) {
+-        // force it to stop at the beginning of each line
+-        beginningOfWordPosition = new Point(currentBufferPosition.row, 0)
+-      } else if (range.end.isLessThan(currentBufferPosition)) {
+-        beginningOfWordPosition = range.end
++        return Point(currentBufferPosition.row, 0)
++      } else if (currentBufferPosition.isGreaterThan(range.end)) {
++        return Point.fromObject(range.end)
+       } else {
+-        beginningOfWordPosition = range.start
++        return Point.fromObject(range.start)
+       }
+-
+-      if (!beginningOfWordPosition.isEqual(currentBufferPosition)) stop()
+-    })
+-
+-    return beginningOfWordPosition || currentBufferPosition
++    } else {
++      return currentBufferPosition
++    }
+   }
+ 
+   // Public: Returns buffer position of the next word boundary. It might be on
+@@ -481,23 +483,24 @@ class Cursor extends Model {
+   //      (default: {::wordRegExp})
+   getNextWordBoundaryBufferPosition (options = {}) {
+     const currentBufferPosition = this.getBufferPosition()
+-    const scanRange = [currentBufferPosition, this.editor.getEofBufferPosition()]
++    const scanRange = Range(currentBufferPosition, this.editor.getEofBufferPosition())
+ 
+-    let endOfWordPosition
+-    this.editor.scanInBufferRange((options.wordRegex != null ? options.wordRegex : this.wordRegExp()), scanRange, function ({range, stop}) {
++    const range = this.editor.buffer.findInRangeSync(
++      options.wordRegex || this.wordRegExp(),
++      scanRange
++    )
++
++    if (range) {
+       if (range.start.row > currentBufferPosition.row) {
+-        // force it to stop at the beginning of each line
+-        endOfWordPosition = new Point(range.start.row, 0)
+-      } else if (range.start.isGreaterThan(currentBufferPosition)) {
+-        endOfWordPosition = range.start
++        return Point(range.start.row, 0)
++      } else if (currentBufferPosition.isLessThan(range.start)) {
++        return Point.fromObject(range.start)
+       } else {
+-        endOfWordPosition = range.end
++        return Point.fromObject(range.end)
+       }
+-
+-      if (!endOfWordPosition.isEqual(currentBufferPosition)) stop()
+-    })
+-
+-    return endOfWordPosition || currentBufferPosition
++    } else {
++      return currentBufferPosition
++    }
+   }
+ 
+   // Public: Retrieves the buffer position of where the current word starts.

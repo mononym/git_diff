@@ -4,6 +4,6 @@ defmodule GitDiffTest do
 
   test "greets the world" do
     text = File.read!("test/diff.txt")
-    assert GitDiff.parse_patch!(text) == nil
+    assert GitDiff.parse_patch!(text) != nil
   end
 end

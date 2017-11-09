@@ -18,3 +18,6 @@ erl_crash.dump
 
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
+
+# Ignore any snapshots created by running bench tests by default. Will need to force the snapshots to keep.
+/bench/snapshots/*

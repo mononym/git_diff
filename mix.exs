@@ -4,7 +4,9 @@ defmodule GitDiff.Mixfile do
   def project do
     [
       app: :git_diff,
+      build_embedded: Mix.env == :prod,
       deps: deps(),
+      description: description(),
       elixir: "~> 1.5",
       name: "GitDiff",
       package: package(),
@@ -16,13 +18,16 @@ defmodule GitDiff.Mixfile do
     ]
   end
 
+  defp description() do
+    "A simple, naive parser for output from 'git diff'"
+  end
+
   defp package do
     [
-      description: "A simple, naive parser for output from 'git diff'",
-      files: ["lib", "config", "mix.exs", "README.md", "LICENSE.txt"],
-      maintainers: ["Chris Hicks"],
+      files: ["lib", "bench", "mix.exs", "README.md", "LICENSE.txt"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/mononym/git_diff"}
+      links: %{"GitHub" => "https://github.com/mononym/git_diff"},
+      maintainers: ["Chris Hicks"]
     ]
   end
 
@@ -36,6 +41,7 @@ defmodule GitDiff.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:benchfella, "~> 0.3.0", only: :dev},
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
