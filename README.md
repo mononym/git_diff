@@ -24,7 +24,8 @@ Output:
       %GitDiff.Chunk{
         from_num_lines: "42",
         from_start_line: "42",
-        header: "class Cursor extends Model {", # The function header
+        header: "@@ -481,23 +483,24 @@ class Cursor extends Model {"
+        context: "class Cursor extends Model {",
         lines: [
           %GitDiff.Line{
             line: "  {",
@@ -45,7 +46,7 @@ Output:
 The above output is heavily truncated for illustration, but it should give enough of an idea of what to expect. The
 code, while naive, is less than 100 lines of actual code and it's painfully obvious where the output data structure is
 constructed so it should be easy to discover the answer to any questions about how something will look. Or you could run
-it.
+it against the `diff.txt` file in the `test` directory for some quick viewing of the output.
 
 ## Benchmarks
 

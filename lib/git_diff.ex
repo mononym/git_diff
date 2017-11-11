@@ -42,12 +42,13 @@ defmodule GitDiff do
     chunk =
       case line do
         "@@" <> line ->
-          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+),(?<from_num_lines>[0-9]+) \+(?<to_start_line>[0-9]+),(?<to_num_lines>[0-9]+) @@( (?<header>.+))?/, line)
+          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+),(?<from_num_lines>[0-9]+) \+(?<to_start_line>[0-9]+),(?<to_num_lines>[0-9]+) @@( (?<context>.+))?/, line)
           %{chunk | from_num_lines: results["from_num_lines"],
                     from_start_line: results["from_start_line"],
                     to_num_lines: results["to_num_lines"],
                     to_start_line: results["to_start_line"],
-                    header: results["header"]
+                    context: results["context"],
+                    header: "@@" <> line
           }
         " " <> line -> %{chunk | lines: [%Line{line: line, type: :context} | chunk.lines]}
         "+" <> line -> %{chunk | lines: [%Line{line: line, type: :add} | chunk.lines]}
