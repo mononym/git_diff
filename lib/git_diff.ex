@@ -11,13 +11,27 @@ defmodule GitDiff do
 
   @doc """
   Parse the output from a 'git diff' command.
+  
+  Returns `{:ok, [%GitDiff.Patch{}]}` in case of success, '{:error, :unrecognized_format}' otherwise.
   """
-  def parse_patch!(git_diff) do
-    git_diff
-    |> String.splitter("\n")
-    |> split_diffs()
-    |> process_diffs()
-    |> Enum.to_list()
+  @spec parse_patch(String.t) :: {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
+  def parse_patch(git_diff) do
+    try do
+      parsed_diff =
+        git_diff
+        |> String.splitter("\n")
+        |> split_diffs()
+        |> process_diffs()
+        |> Enum.to_list()
+        
+      if Enum.all?(parsed_diff, fn(%Patch{} = patch) -> true; (_) -> false end) do
+        {:ok, parsed_diff}
+      else
+        {:error, :unrecognized_format}
+      end
+    rescue
+      _ -> {:error, :unrecognized_format}
+    end
   end
   
   defp process_diffs(diffs) do
@@ -62,7 +76,7 @@ defmodule GitDiff do
     [_ | [diff_type | _]] = String.split(header, " ")
     
     if diff_type !== "--git" do
-      throw(:invalid_diff_type)
+      raise "Invalid diff type"
     else
       process_diff_headers(%Patch{}, headers)
     end

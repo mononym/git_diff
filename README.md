@@ -2,6 +2,10 @@
 
 A simple, naive implementation for taking the output from 'git diff' and transforming it into Elixir structs.
 
+## Documentation
+
+API documentation is available at [https://hexdocs.pm/git_diff](https://hexdocs.pm/git_diff)
+
 ## Installation
 
 The package can be installed by adding `git_diff` to your list of dependencies in `mix.exs`:
@@ -9,7 +13,7 @@ The package can be installed by adding `git_diff` to your list of dependencies i
 ```elixir
 def deps do
   [
-    {:git_diff, "~> 0.2.0"}
+    {:git_diff, "~> 0.3.0"}
   ]
 end
 ```
@@ -44,9 +48,8 @@ Output:
 ```
 
 The above output is heavily truncated for illustration, but it should give enough of an idea of what to expect. The
-code, while naive, is less than 100 lines of actual code and it's painfully obvious where the output data structure is
-constructed so it should be easy to discover the answer to any questions about how something will look. Or you could run
-it against the `diff.txt` file in the `test` directory for some quick viewing of the output.
+code, while naive, is less than 100 lines of actual code and all takes place in the GitDiff module. Emulate the tests
+in a an interactive shell for quick viewing of the output.
 
 ## Benchmarks
 
