@@ -4,6 +4,6 @@ defmodule GitDiff.SimpleBench do
   @text File.read!("test/diff.txt")
 
   bench "parse diff" do
-    GitDiff.parse_patch!(@text)
+    GitDiff.parse_patch(@text)
   end
 end
