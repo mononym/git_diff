@@ -63,7 +63,7 @@ defmodule GitDiff do
   @doc """
   Parse the output from a 'git diff' command.
   
-  Returns `{:ok, [%GitDiff.Patch{}]}` in case of success, `{:error, :unrecognized_format}` otherwise.
+  Returns `{:ok, [%GitDiff.Patch{}]}` for success, `{:error, :unrecognized_format}` otherwise. See `GitDiff.Patch`.
   """
   @spec parse_patch(String.t) :: {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
   def parse_patch(git_diff) do
