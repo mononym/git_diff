@@ -13,7 +13,7 @@ The package can be installed by adding `git_diff` to your list of dependencies i
 ```elixir
 def deps do
   [
-    {:git_diff, "~> 0.3.0"}
+    {:git_diff, "~> 0.5.0"}
   ]
 end
 ```
@@ -29,10 +29,12 @@ Output:
         from_num_lines: "42",
         from_start_line: "42",
         header: "@@ -481,23 +483,24 @@ class Cursor extends Model {"
-        context: "class Cursor extends Model {",
+        context: "class Cursor extends Model {", # will be "" if there is no context
         lines: [
           %GitDiff.Line{
-            line: "  {",
+            from_line_number: 481,
+            text: "   {",
+            to_line_number: 483,
             type: :context # will be one of :context, :add, :delete
           },
           ...
