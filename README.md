@@ -35,7 +35,7 @@ Output:
             from_line_number: 481,
             text: "   {",
             to_line_number: 483,
-            type: :context # will be one of :context, :add, :delete
+            type: :context # will be one of :context, :add, :remove
           },
           ...
         ],
