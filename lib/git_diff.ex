@@ -68,7 +68,7 @@ defmodule GitDiff do
                       context: results["context"],
                       header: "@@" <> text
           }}
-        " " <> text ->
+        " " <> _ = text ->
           line =
             %Line{
               text: text,
@@ -81,7 +81,7 @@ defmodule GitDiff do
             %{context | to_line_number: context.to_line_number + 1, from_line_number: context.from_line_number + 1},
             %{chunk | lines: [line | chunk.lines]}
           }
-        "+" <> text ->
+        "+" <> _ = text ->
           line =
             %Line{
               text: text,
@@ -93,7 +93,7 @@ defmodule GitDiff do
             %{context | to_line_number: context.to_line_number + 1},
             %{chunk | lines: [line | chunk.lines]}
           }
-        "-" <> text ->
+        "-" <> _ = text ->
           line =
             %Line{
               text: text,
