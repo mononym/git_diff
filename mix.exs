@@ -19,7 +19,7 @@ defmodule GitDiff.Mixfile do
   end
 
   defp description() do
-    "A simple, naive parser for output from 'git diff'"
+    "A simple parser for output from 'git diff'"
   end
 
   defp package do
