@@ -1,12 +1,6 @@
 defmodule GitDiff do
   @moduledoc """
-  # GitDiff
-  
   A simple implementation for taking the output from 'git diff' and transforming it into Elixir structs.
-  
-  ## Documentation
-  
-  API documentation is available at [https://hexdocs.pm/git_diff](https://hexdocs.pm/git_diff)
   
   ## Installation
   
@@ -37,7 +31,7 @@ defmodule GitDiff do
               from_line_number: 481,
               text: "   {",
               to_line_number: 483,
-              type: :context # will be one of :context, :add, :delete
+              type: :context # will be one of :context, :add, :remove
             },
             ...
           ],
