@@ -1,6 +1,6 @@
 # GitDiff
 
-A simple, naive implementation for taking the output from 'git diff' and transforming it into Elixir structs.
+A simple implementation for taking the output from 'git diff' and transforming it into Elixir structs.
 
 ## Documentation
 
