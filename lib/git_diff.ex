@@ -109,7 +109,7 @@ defmodule GitDiff do
     {context, chunk} =
       case line do
         "@@" <> text ->
-          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+),(?<from_num_lines>[0-9]+) \+(?<to_start_line>[0-9]+),(?<to_num_lines>[0-9]+) @@( (?<context>.+))?/, text)
+          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+)(,(?<from_num_lines>[0-9]+))? \+(?<to_start_line>[0-9]+)(,(?<to_num_lines>[0-9]+))? @@( (?<context>.+))?/, text)
           {
             %{context | from_line_number: String.to_integer(results["from_start_line"]), to_line_number: String.to_integer(results["to_start_line"])},
             %{chunk | from_num_lines: results["from_num_lines"],
@@ -154,6 +154,17 @@ defmodule GitDiff do
             
           {
             %{context | from_line_number: context.from_line_number + 1},
+            %{chunk | lines: [line | chunk.lines]}
+          }
+        "\\" <> _ = text ->
+          line =
+            %Line{
+              text: text,
+              type: :context,
+            }
+
+          {
+            context,
             %{chunk | lines: [line | chunk.lines]}
           }
       end
