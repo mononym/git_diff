@@ -204,6 +204,7 @@ defmodule GitDiff do
         "--- a/" <> from -> %{patch | from: from}
         "--- /dev/null" -> %{patch | from: nil}
         "+++ b/" <> to -> %{patch | to: to}
+        "+++ /dev/null" -> %{patch | to: nil}
       end
     
     process_diff_headers(patch, headers)
