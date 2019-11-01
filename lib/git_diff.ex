@@ -202,6 +202,7 @@ defmodule GitDiff do
           
           %{patch | headers: Map.put(patch.headers, "index", {results["first_hash"], results["second_hash"], results["mode"]})}
         "--- a/" <> from -> %{patch | from: from}
+        "--- /dev/null" -> %{patch | from: nil}
         "+++ b/" <> to -> %{patch | to: to}
       end
     
