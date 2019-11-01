@@ -193,7 +193,9 @@ defmodule GitDiff do
         "new file mode " <> mode -> %{patch | headers: Map.put(patch.headers, "new file mode", mode)}
         "copy from mode " <> mode -> %{patch | headers: Map.put(patch.headers, "copy from mode", mode)}
         "copy to mode " <> mode -> %{patch | headers: Map.put(patch.headers, "copy to mode", mode)}
+        "rename from " <> filepath -> %{patch | headers: Map.put(patch.headers, "rename from", filepath)}
         "rename from mode " <> mode -> %{patch | headers: Map.put(patch.headers, "rename from mode", mode)}
+        "rename to " <> filepath -> %{patch | headers: Map.put(patch.headers, "rename to", filepath)}
         "rename to mode " <> mode -> %{patch | headers: Map.put(patch.headers, "rename to mode", mode)}
         "similarity index " <> number -> %{patch | headers: Map.put(patch.headers, "similarity index", number)}
         "dissimilarity index " <> number -> %{patch | headers: Map.put(patch.headers, "dissimilarity index", number)}
