@@ -109,7 +109,7 @@ defmodule GitDiff do
     {context, chunk} =
       case line do
         "@@" <> text ->
-          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+),(?<from_num_lines>[0-9]+) \+(?<to_start_line>[0-9]+),(?<to_num_lines>[0-9]+) @@( (?<context>.+))?/, text)
+          results = Regex.named_captures(~r/ -(?<from_start_line>[0-9]+)(,(?<from_num_lines>[0-9]+))? \+(?<to_start_line>[0-9]+)(,(?<to_num_lines>[0-9]+))? @@( (?<context>.+))?/, text)
           {
             %{context | from_line_number: String.to_integer(results["from_start_line"]), to_line_number: String.to_integer(results["to_start_line"])},
             %{chunk | from_num_lines: results["from_num_lines"],
@@ -156,6 +156,17 @@ defmodule GitDiff do
             %{context | from_line_number: context.from_line_number + 1},
             %{chunk | lines: [line | chunk.lines]}
           }
+        "\\" <> _ = text ->
+          line =
+            %Line{
+              text: text,
+              type: :context,
+            }
+
+          {
+            context,
+            %{chunk | lines: [line | chunk.lines]}
+          }
       end
     
     process_chunk(context, chunk, lines)
@@ -182,7 +193,9 @@ defmodule GitDiff do
         "new file mode " <> mode -> %{patch | headers: Map.put(patch.headers, "new file mode", mode)}
         "copy from mode " <> mode -> %{patch | headers: Map.put(patch.headers, "copy from mode", mode)}
         "copy to mode " <> mode -> %{patch | headers: Map.put(patch.headers, "copy to mode", mode)}
+        "rename from " <> filepath -> %{patch | headers: Map.put(patch.headers, "rename from", filepath)}
         "rename from mode " <> mode -> %{patch | headers: Map.put(patch.headers, "rename from mode", mode)}
+        "rename to " <> filepath -> %{patch | headers: Map.put(patch.headers, "rename to", filepath)}
         "rename to mode " <> mode -> %{patch | headers: Map.put(patch.headers, "rename to mode", mode)}
         "similarity index " <> number -> %{patch | headers: Map.put(patch.headers, "similarity index", number)}
         "dissimilarity index " <> number -> %{patch | headers: Map.put(patch.headers, "dissimilarity index", number)}
@@ -191,7 +204,9 @@ defmodule GitDiff do
           
           %{patch | headers: Map.put(patch.headers, "index", {results["first_hash"], results["second_hash"], results["mode"]})}
         "--- a/" <> from -> %{patch | from: from}
+        "--- /dev/null" -> %{patch | from: nil}
         "+++ b/" <> to -> %{patch | to: to}
+        "+++ /dev/null" -> %{patch | to: nil}
       end
     
     process_diff_headers(patch, headers)
