@@ -203,15 +203,23 @@ defmodule GitDiff do
           results = Regex.named_captures(~r/(?<first_hash>.+?)\.\.(?<second_hash>.+?) (?<mode>.+)/, rest)
           
           %{patch | headers: Map.put(patch.headers, "index", {results["first_hash"], results["second_hash"], results["mode"]})}
-        "--- a/" <> from -> %{patch | from: from}
-        "--- /dev/null" -> %{patch | from: nil}
-        "+++ b/" <> to -> %{patch | to: to}
-        "+++ /dev/null" -> %{patch | to: nil}
+        "--- " <> file -> %{patch | from: from_file(file)}
+        "+++ " <> file -> %{patch | to: to_file(file)}
+        "Binary files " <> rest ->
+          results = Regex.named_captures(~r/(?<from>.+?) and (?<to>.+?) differ/, rest)
+
+          %{patch | from: from_file(results["from"]), to: to_file(results["to"])}
       end
     
     process_diff_headers(patch, headers)
   end
-  
+
+  defp from_file("a/" <> file), do: file
+  defp from_file("/dev/null"), do: nil
+
+  defp to_file("b/" <> file), do: file
+  defp to_file("/dev/null"), do: nil
+
   defp split_diff(diff) do
     chunk_fun =
       fn line, lines ->
