@@ -10,7 +10,7 @@ defmodule GitDiff.Mixfile do
       elixir: "~> 1.5",
       name: "GitDiff",
       package: package(),
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/mononym/git_diff",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
