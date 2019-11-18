@@ -41,9 +41,9 @@ defmodule GitDiff.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:benchfella, "~> 0.3.0", only: :dev},
-      {:excoveralls, "~> 0.7", only: :test},
-      {:ex_doc, "~> 0.16", only: :dev, runtime: false}
+      {:benchfella, "~> 0.3.5", only: :dev},
+      {:excoveralls, "~> 0.12.0", only: :test},
+      {:ex_doc, "~> 0.21.2", only: :dev, runtime: false}
     ]
   end
 end
