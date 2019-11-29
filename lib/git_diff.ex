@@ -70,7 +70,8 @@ defmodule GitDiff do
     try do
       parsed_diff =
         git_diff
-        |> String.splitter("\n", trim: true)
+        |> String.trim()
+        |> String.splitter("\n")
         |> split_diffs()
         |> process_diffs()
         |> Enum.to_list()
