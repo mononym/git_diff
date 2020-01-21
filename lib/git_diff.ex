@@ -224,13 +224,13 @@ defmodule GitDiff do
           %{patch | headers: Map.put(patch.headers, "copy to mode", mode)}
 
         "rename from " <> filepath ->
-          %{patch | headers: Map.put(patch.headers, "rename from", filepath)}
+          %{patch | headers: Map.put(patch.headers, "rename from", filepath), from: filepath}
 
         "rename from mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "rename from mode", mode)}
 
         "rename to " <> filepath ->
-          %{patch | headers: Map.put(patch.headers, "rename to", filepath)}
+          %{patch | headers: Map.put(patch.headers, "rename to", filepath), to: filepath}
 
         "rename to mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "rename to mode", mode)}
