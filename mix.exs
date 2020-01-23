@@ -14,7 +14,7 @@ defmodule GitDiff.Mixfile do
       source_url: "https://github.com/mononym/git_diff",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
-      version: "0.5.1",
+      version: "0.6.0",
     ]
   end
 
