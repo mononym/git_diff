@@ -9,7 +9,7 @@ defmodule GitDiff do
   ```elixir
   def deps do
     [
-      {:git_diff, "~> 0.5.0"}
+      {:git_diff, "~> 0.6.1"}
     ]
   end
   ```
@@ -121,8 +121,8 @@ defmodule GitDiff do
 
           {%{
              context
-             | from_line_number: results["from_start_line"],
-               to_line_number: results["to_start_line"]
+             | from_line_number: String.to_integer(results["from_start_line"]),
+               to_line_number: String.to_integer(results["to_start_line"])
            },
            %{
              chunk
@@ -138,15 +138,15 @@ defmodule GitDiff do
           line = %Line{
             text: text,
             type: :context,
-            to_line_number: context.to_line_number,
-            from_line_number: context.from_line_number
+            to_line_number: Integer.to_string(context.to_line_number),
+            from_line_number: Integer.to_string(context.from_line_number)
           }
 
           {
             %{
               context
-              | to_line_number: context.to_line_number,
-                from_line_number: context.from_line_number
+              | to_line_number: context.to_line_number + 1,
+                from_line_number: context.from_line_number + 1
             },
             %{chunk | lines: [line | chunk.lines]}
           }
@@ -155,11 +155,11 @@ defmodule GitDiff do
           line = %Line{
             text: text,
             type: :add,
-            to_line_number: context.to_line_number
+            to_line_number: Integer.to_string(context.to_line_number)
           }
 
           {
-            %{context | to_line_number: context.to_line_number},
+            %{context | to_line_number: context.to_line_number + 1},
             %{chunk | lines: [line | chunk.lines]}
           }
 
@@ -167,11 +167,11 @@ defmodule GitDiff do
           line = %Line{
             text: text,
             type: :remove,
-            from_line_number: context.from_line_number
+            from_line_number: Integer.to_string(context.from_line_number)
           }
 
           {
-            %{context | from_line_number: context.from_line_number},
+            %{context | from_line_number: context.from_line_number + 1},
             %{chunk | lines: [line | chunk.lines]}
           }
 

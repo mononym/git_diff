@@ -4,17 +4,22 @@ defmodule GitDiff.Mixfile do
   def project do
     [
       app: :git_diff,
-      build_embedded: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
       deps: deps(),
       description: description(),
       elixir: "~> 1.5",
       name: "GitDiff",
       package: package(),
-      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       source_url: "https://github.com/mononym/git_diff",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      version: "0.6.0",
+      version: "0.6.1"
     ]
   end
 
