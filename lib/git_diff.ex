@@ -82,18 +82,45 @@ defmodule GitDiff do
     end
   end
 
+  @doc """
+  Parse the output from a 'git diff' command.
+
+  Like `parse_patch/1` but takes an `Enumerable` of lines and returns a stream
+  of `{:ok, %GitDiff.Patch{}}` for successfully parsed patches or `{:error, _}`
+  if the patch failed to parse.
+  """
+  @spec stream_patch(Enum.t()) :: Enum.t()
+  def stream_patch(stream) do
+    stream
+    |> Stream.map(&String.trim_trailing(&1, "\n"))
+    |> split_diffs()
+    |> process_diffs_ok()
+  end
+
   defp process_diffs(diffs) do
+    Stream.map(diffs, &process_diff/1)
+  end
+
+  defp process_diffs_ok(diffs) do
     Stream.map(diffs, fn diff ->
-      [headers | chunks] = split_diff(diff) |> Enum.to_list()
-      patch = process_diff_headers(headers)
-
-      chunks =
-        Enum.map(chunks, fn lines ->
-          process_chunk(%{from_line_number: nil, to_line_number: nil}, %Chunk{}, lines)
-        end)
-
-      %{patch | chunks: chunks}
+      try do
+        {:ok, process_diff(diff)}
+      catch
+        :throw, {:git_diff, _reason} -> {:error, :unrecognized_format}
+      end
     end)
+  end
+
+  defp process_diff(diff) do
+    [headers | chunks] = split_diff(diff) |> Enum.to_list()
+    patch = process_diff_headers(headers)
+
+    chunks =
+      Enum.map(chunks, fn lines ->
+        process_chunk(%{from_line_number: nil, to_line_number: nil}, %Chunk{}, lines)
+      end)
+
+    %{patch | chunks: chunks}
   end
 
   defp process_chunk(_, chunk, []) do
