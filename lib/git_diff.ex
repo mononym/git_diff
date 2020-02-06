@@ -76,16 +76,9 @@ defmodule GitDiff do
         |> process_diffs()
         |> Enum.to_list()
 
-      if Enum.all?(parsed_diff, fn
-           %Patch{} = _patch -> true
-           _ -> false
-         end) do
-        {:ok, parsed_diff}
-      else
-        {:error, :unrecognized_format}
-      end
-    rescue
-      _ -> {:error, :unrecognized_format}
+      {:ok, parsed_diff}
+    catch
+      :throw, {:git_diff, _reason} -> {:error, :unrecognized_format}
     end
   end
 
@@ -185,6 +178,9 @@ defmodule GitDiff do
             context,
             %{chunk | lines: [line | chunk.lines]}
           }
+
+        other ->
+          throw({:git_diff, {:invalid_chunk_line, other}})
       end
 
     process_chunk(context, chunk, lines)
@@ -194,7 +190,7 @@ defmodule GitDiff do
     [_ | [diff_type | _]] = String.split(header, " ")
 
     if diff_type !== "--git" do
-      raise "Invalid diff type"
+      throw({:git_diff, {:invalid_diff_type, diff_type}})
     else
       process_diff_headers(%Patch{}, headers)
     end
@@ -265,6 +261,9 @@ defmodule GitDiff do
           results = Regex.named_captures(~r/(?<from>.+?) and (?<to>.+?) differ/, rest)
 
           %{patch | from: from_file(results["from"]), to: to_file(results["to"])}
+
+        other ->
+          throw({:git_diff, {:invalid_header, other}})
       end
 
     process_diff_headers(patch, headers)
@@ -272,9 +271,11 @@ defmodule GitDiff do
 
   defp from_file("a/" <> file), do: file
   defp from_file("/dev/null"), do: nil
+  defp from_file(other), do: throw({:git_diff, {:invalid_from_filename, other}})
 
   defp to_file("b/" <> file), do: file
   defp to_file("/dev/null"), do: nil
+  defp to_file(other), do: throw({:git_diff, {:invalid_to_filename, other}})
 
   defp split_diff(diff) do
     chunk_fun = fn line, lines ->
