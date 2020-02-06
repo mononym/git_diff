@@ -65,15 +65,15 @@ defmodule GitDiff do
 
   Returns `{:ok, [%GitDiff.Patch{}]}` for success, `{:error, :unrecognized_format}` otherwise. See `GitDiff.Patch`.
   """
-  @spec parse_patch(String.t()) :: {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
-  def parse_patch(git_diff) do
+  @spec parse_patch(String.t(), Keyword.t()) :: {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
+  def parse_patch(git_diff, opts \\ []) do
     try do
       parsed_diff =
         git_diff
         |> String.trim()
         |> String.splitter("\n")
         |> split_diffs()
-        |> process_diffs()
+        |> process_diffs(state(opts))
         |> Enum.to_list()
 
       {:ok, parsed_diff}
@@ -89,31 +89,38 @@ defmodule GitDiff do
   of `{:ok, %GitDiff.Patch{}}` for successfully parsed patches or `{:error, _}`
   if the patch failed to parse.
   """
-  @spec stream_patch(Enum.t()) :: Enum.t()
-  def stream_patch(stream) do
+  @spec stream_patch(Enum.t(), Keyword.t()) :: Enum.t()
+  def stream_patch(stream, opts \\ []) do
     stream
     |> Stream.map(&String.trim_trailing(&1, "\n"))
     |> split_diffs()
-    |> process_diffs_ok()
+    |> process_diffs_ok(state(opts))
   end
 
-  defp process_diffs(diffs) do
-    Stream.map(diffs, &process_diff/1)
+  defp state(opts) do
+    %{
+      relative_from: opts[:relative_from] && Path.relative(opts[:relative_from]),
+      relative_to: opts[:relative_to] && Path.relative(opts[:relative_to])
+    }
   end
 
-  defp process_diffs_ok(diffs) do
+  defp process_diffs(diffs, state) do
+    Stream.map(diffs, &process_diff(&1, state))
+  end
+
+  defp process_diffs_ok(diffs, state) do
     Stream.map(diffs, fn diff ->
       try do
-        {:ok, process_diff(diff)}
+        {:ok, process_diff(diff, state)}
       catch
         :throw, {:git_diff, _reason} -> {:error, :unrecognized_format}
       end
     end)
   end
 
-  defp process_diff(diff) do
+  defp process_diff(diff, state) do
     [headers | chunks] = split_diff(diff) |> Enum.to_list()
-    patch = process_diff_headers(headers)
+    patch = process_diff_headers(headers, state)
 
     chunks =
       Enum.map(chunks, fn lines ->
@@ -213,19 +220,19 @@ defmodule GitDiff do
     process_chunk(context, chunk, lines)
   end
 
-  defp process_diff_headers([header | headers]) do
+  defp process_diff_headers([header | headers], state) do
     [_ | [diff_type | _]] = String.split(header, " ")
 
     if diff_type !== "--git" do
       throw({:git_diff, {:invalid_diff_type, diff_type}})
     else
-      process_diff_headers(%Patch{}, headers)
+      process_diff_headers(%Patch{}, headers, state)
     end
   end
 
-  defp process_diff_headers(patch, []), do: patch
+  defp process_diff_headers(patch, [], _state), do: patch
 
-  defp process_diff_headers(patch, [header | headers]) do
+  defp process_diff_headers(patch, [header | headers], state) do
     patch =
       case header do
         "old mode " <> mode ->
@@ -279,21 +286,21 @@ defmodule GitDiff do
           }
 
         "--- " <> file ->
-          %{patch | from: from_file(file)}
+          %{patch | from: maybe_relative_to(from_file(file), state.relative_from)}
 
         "+++ " <> file ->
-          %{patch | to: to_file(file)}
+          %{patch | to: maybe_relative_to(to_file(file), state.relative_to)}
 
         "Binary files " <> rest ->
           results = Regex.named_captures(~r/(?<from>.+?) and (?<to>.+?) differ/, rest)
 
-          %{patch | from: from_file(results["from"]), to: to_file(results["to"])}
+          %{patch | from: maybe_relative_to(from_file(results["from"]), state.relative_from), to: maybe_relative_to(to_file(results["to"]), state.relative_to)}
 
         other ->
           throw({:git_diff, {:invalid_header, other}})
       end
 
-    process_diff_headers(patch, headers)
+    process_diff_headers(patch, headers, state)
   end
 
   defp from_file("a/" <> file), do: file
@@ -303,6 +310,10 @@ defmodule GitDiff do
   defp to_file("b/" <> file), do: file
   defp to_file("/dev/null"), do: nil
   defp to_file(other), do: throw({:git_diff, {:invalid_to_filename, other}})
+
+  defp maybe_relative_to(nil, _relative), do: nil
+  defp maybe_relative_to(path, nil), do: path
+  defp maybe_relative_to(path, relative), do: Path.relative_to(path, relative)
 
   defp split_diff(diff) do
     chunk_fun = fn line, lines ->
