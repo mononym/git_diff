@@ -13,7 +13,7 @@ The package can be installed by adding `git_diff` to your list of dependencies i
 ```elixir
 def deps do
   [
-    {:git_diff, "~> 0.5.1"}
+    {:git_diff, "~> 0.6.2"}
   ]
 end
 ```
