@@ -13,6 +13,32 @@ defmodule GitDiffTest do
     Enum.to_list(GitDiff.stream_patch(stream))
   end
 
+  test "relative_from and relative_to adjust patch dirs" do
+    {:ok, patch} =
+      stream!("test/diff.txt")
+      |> GitDiff.stream_patch(relative_to: "/tmp/foo", relative_from: "/tmp/foo")
+      |> Enum.to_list()
+      |> List.last()
+
+    assert patch.from == "package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico"
+    assert patch.to == "package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico"
+    assert patch.headers["rename from"] == "package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico"
+    assert patch.headers["rename to"] == "package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico"
+  end
+
+  test "reads renames" do
+    {:ok, patch} =
+      stream!("test/diff.txt")
+      |> GitDiff.stream_patch()
+      |> Enum.to_list()
+      |> List.last()
+
+    assert patch.from == "/tmp/foo/package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico"
+    assert patch.to == "/tmp/foo/package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico"
+    assert patch.headers["rename from"] == "/tmp/foo/package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico"
+    assert patch.headers["rename to"] == "/tmp/foo/package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico"
+  end
+
   test "parse an invalid diff" do
     dir = "test/bad_diffs"
     Enum.each(ls!(dir), fn(file) ->
