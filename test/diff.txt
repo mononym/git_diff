@@ -18,7 +18,7 @@ index 79b1e37..fa84067 100644
 @@ -1077,6 +1077,20 @@ describe('TextEditor', () => {
          expect(editor.getCursorBufferPosition()).toEqual([0, 1])
        })
- 
+
 +      it('stops at camelCase boundaries with non-ascii characters', () => {
 +        editor.setText(' gétÁrevìôüsWord\n')
 +        editor.setCursorBufferPosition([0, 16])
@@ -39,7 +39,7 @@ index 79b1e37..fa84067 100644
 @@ -1102,6 +1116,21 @@ describe('TextEditor', () => {
          expect(editor.getCursorBufferPosition()).toEqual([0, 2])
        })
- 
+
 +      it('skips consecutive uppercase non-ascii letters', () => {
 +        editor.setText(' ÀÁÅDF \n')
 +        editor.setCursorBufferPosition([0, 7])
@@ -68,7 +68,7 @@ index 10bdef8..181eeb9 100644
      const previousNonBlankRow = this.editor.buffer.previousNonBlankRow(currentBufferPosition.row)
 -    const scanRange = [[previousNonBlankRow || 0, 0], currentBufferPosition]
 +    const scanRange = Range(Point(previousNonBlankRow || 0, 0), currentBufferPosition)
- 
+
 -    let beginningOfWordPosition
 -    this.editor.backwardsScanInBufferRange(options.wordRegex || this.wordRegExp(), scanRange, ({range, stop}) => {
 +    const ranges = this.editor.buffer.findAllInRangeSync(
@@ -99,7 +99,7 @@ index 10bdef8..181eeb9 100644
 +      return currentBufferPosition
 +    }
    }
- 
+
    // Public: Returns buffer position of the next word boundary. It might be on
 @@ -481,23 +483,24 @@ class Cursor extends Model {
    //      (default: {::wordRegExp})
@@ -107,7 +107,7 @@ index 10bdef8..181eeb9 100644
      const currentBufferPosition = this.getBufferPosition()
 -    const scanRange = [currentBufferPosition, this.editor.getEofBufferPosition()]
 +    const scanRange = Range(currentBufferPosition, this.editor.getEofBufferPosition())
- 
+
 -    let endOfWordPosition
 -    this.editor.scanInBufferRange((options.wordRegex != null ? options.wordRegex : this.wordRegExp()), scanRange, function ({range, stop}) {
 +    const range = this.editor.buffer.findInRangeSync(
@@ -137,9 +137,13 @@ index 10bdef8..181eeb9 100644
 +      return currentBufferPosition
 +    }
    }
- 
+
    // Public: Retrieves the buffer position of where the current word starts.
 diff --git a/lib/mix/tasks/.DS_Store b/lib/mix/tasks/.DS_Store
 new file mode 100644
 index 0000000..5008ddf
 Binary files /dev/null and b/lib/mix/tasks/.DS_Store differ
+diff --git a/tmp/foo/package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico b/tmp/foo/package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico
+similarity index 100%
+rename from /tmp/foo/package-phx_new-1.0.0-BD5E394E/my_app/web/static/assets/favicon.ico
+rename to /tmp/foo/package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico

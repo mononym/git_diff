@@ -253,14 +253,32 @@ defmodule GitDiff do
         "copy to mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "copy to mode", mode)}
 
-        "rename from " <> filepath ->
-          %{patch | headers: Map.put(patch.headers, "rename from", filepath), from: filepath}
+        "rename from " <> file ->
+          %{
+            patch
+            | headers:
+                Map.put(
+                  patch.headers,
+                  "rename from",
+                  maybe_relative_to_rename(file, state.relative_from)
+                ),
+              from: maybe_relative_to_rename(file, state.relative_from)
+          }
 
         "rename from mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "rename from mode", mode)}
 
-        "rename to " <> filepath ->
-          %{patch | headers: Map.put(patch.headers, "rename to", filepath), to: filepath}
+        "rename to " <> file ->
+          %{
+            patch
+            | headers:
+                Map.put(
+                  patch.headers,
+                  "rename to",
+                  maybe_relative_to_rename(file, state.relative_to)
+                ),
+              to: maybe_relative_to_rename(file, state.relative_to)
+          }
 
         "rename to mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "rename to mode", mode)}
@@ -314,6 +332,9 @@ defmodule GitDiff do
   defp maybe_relative_to(nil, _relative), do: nil
   defp maybe_relative_to(path, nil), do: path
   defp maybe_relative_to(path, relative), do: Path.relative_to(path, relative)
+
+  defp maybe_relative_to_rename(path, nil), do: path
+  defp maybe_relative_to_rename(path, relative), do: Path.relative_to(path, "/" <> relative)
 
   defp split_diff(diff) do
     chunk_fun = fn line, lines ->
