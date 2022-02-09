@@ -51,7 +51,7 @@ Output:
 
 The above output is heavily truncated for illustration, but it should give enough of an idea of what to expect. The
 code, while naive, is less than 100 lines of actual code and all takes place in the GitDiff module. Emulate the tests
-in a an interactive shell for quick viewing of the output.
+in an interactive shell for quick viewing of the output.
 
 ## Benchmarks
 
