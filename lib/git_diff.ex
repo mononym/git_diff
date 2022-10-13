@@ -221,12 +221,18 @@ defmodule GitDiff do
   end
 
   defp process_diff_headers([header | headers], state) do
-    [_ | [diff_type | _]] = String.split(header, " ")
+    case String.split(header, " ") do
+      ["diff", "--git", "a/" <> file_a, "b/" <> file_b] ->
+        process_diff_headers(
+          %Patch{
+            headers: %{"file_a" => file_a, "file_b" => file_b}
+          },
+          headers,
+          state
+        )
 
-    if diff_type !== "--git" do
-      throw({:git_diff, {:invalid_diff_type, diff_type}})
-    else
-      process_diff_headers(%Patch{}, headers, state)
+      _ ->
+        throw({:git_diff, {:invalid_diff_type, header}})
     end
   end
 
@@ -245,7 +251,12 @@ defmodule GitDiff do
           %{patch | headers: Map.put(patch.headers, "deleted file mode", mode)}
 
         "new file mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "new file mode", mode)}
+          %{
+            patch
+            | headers: Map.put(patch.headers, "new file mode", mode),
+              from: nil,
+              to: maybe_relative_to_rename("/" <> patch.headers["file_b"], state.relative_to)
+          }
 
         "copy from mode " <> mode ->
           %{patch | headers: Map.put(patch.headers, "copy from mode", mode)}
