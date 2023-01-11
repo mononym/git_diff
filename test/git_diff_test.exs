@@ -39,6 +39,19 @@ defmodule GitDiffTest do
     assert patch.headers["rename to"] == "/tmp/foo/package-phx_new-1.5.7-086C1921/my_app/assets/static/favicon.ico"
   end
 
+  test "reads new files without content" do
+    {:ok, patch} =
+      stream!("test/diff_no_changes_new_file.txt")
+      |> GitDiff.stream_patch()
+      |> Enum.to_list()
+      |> List.last()
+
+    assert patch.from == nil
+    assert patch.to == "/file_1.txt"
+    assert patch.headers["file_a"] == "file_1.txt"
+    assert patch.headers["file_b"] == "file_1.txt"
+  end
+
   test "parse an invalid diff" do
     dir = "test/bad_diffs"
     Enum.each(ls!(dir), fn(file) ->
