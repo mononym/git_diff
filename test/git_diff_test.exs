@@ -3,19 +3,19 @@ defmodule GitDiffTest do
   import File
 
   test "parse a valid diff" do
-    text = read!("test/diff.txt")
+    text = read!("test/good_diffs/diff.txt")
     {flag, _} = GitDiff.parse_patch(text)
     assert flag == :ok
   end
 
   test "stream a valid diff" do
-    stream = stream!("test/diff.txt")
+    stream = stream!("test/good_diffs/diff.txt")
     Enum.to_list(GitDiff.stream_patch(stream))
   end
 
   test "relative_from and relative_to adjust patch dirs" do
     {:ok, patch} =
-      stream!("test/diff.txt")
+      stream!("test/good_diffs/diff.txt")
       |> GitDiff.stream_patch(relative_to: "/tmp/foo", relative_from: "/tmp/foo")
       |> Enum.to_list()
       |> List.last()
@@ -32,7 +32,7 @@ defmodule GitDiffTest do
 
   test "reads renames" do
     {:ok, patch} =
-      stream!("test/diff.txt")
+      stream!("test/good_diffs/diff.txt")
       |> GitDiff.stream_patch()
       |> Enum.to_list()
       |> List.last()
@@ -51,7 +51,7 @@ defmodule GitDiffTest do
 
   test "reads new files without content" do
     {:ok, patch} =
-      stream!("test/diff_no_changes_new_file.txt")
+      stream!("test/good_diffs/diff_no_changes_new_file.txt")
       |> GitDiff.stream_patch()
       |> Enum.to_list()
       |> List.last()
