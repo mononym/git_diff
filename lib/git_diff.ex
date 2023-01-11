@@ -65,7 +65,8 @@ defmodule GitDiff do
 
   Returns `{:ok, [%GitDiff.Patch{}]}` for success, `{:error, :unrecognized_format}` otherwise. See `GitDiff.Patch`.
   """
-  @spec parse_patch(String.t(), Keyword.t()) :: {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
+  @spec parse_patch(String.t(), Keyword.t()) ::
+          {:ok, [%GitDiff.Patch{}]} | {:error, :unrecognized_format}
   def parse_patch(git_diff, opts \\ []) do
     try do
       parsed_diff =
@@ -323,7 +324,11 @@ defmodule GitDiff do
         "Binary files " <> rest ->
           results = Regex.named_captures(~r/(?<from>.+?) and (?<to>.+?) differ/, rest)
 
-          %{patch | from: maybe_relative_to(from_file(results["from"]), state.relative_from), to: maybe_relative_to(to_file(results["to"]), state.relative_to)}
+          %{
+            patch
+            | from: maybe_relative_to(from_file(results["from"]), state.relative_from),
+              to: maybe_relative_to(to_file(results["to"]), state.relative_to)
+          }
 
         other ->
           throw({:git_diff, {:invalid_header, other}})

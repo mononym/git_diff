@@ -22,9 +22,9 @@ defmodule GitDiff.Line do
   * :type - The extracted type of line. One of :context, :add, or :remove.
   """
   @type t :: %__MODULE__{
-    from_line_number: String.t(),
-    to_line_number: String.t(),
-    text: String.t(),
-    type: :context | :add | :remove
-  }
+          from_line_number: String.t(),
+          to_line_number: String.t(),
+          text: String.t(),
+          type: :context | :add | :remove
+        }
 end
