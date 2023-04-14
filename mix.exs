@@ -48,7 +48,7 @@ defmodule GitDiff.Mixfile do
     [
       {:benchfella, "~> 0.3.5", only: :dev},
       {:excoveralls, "~> 0.12.0", only: :test},
-      {:ex_doc, "~> 0.21.2", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false}
     ]
   end
 end
