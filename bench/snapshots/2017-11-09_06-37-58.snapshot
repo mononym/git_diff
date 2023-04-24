@@ -1,3 +1,0 @@
-duration:1.0;mem stats:false;sys mem stats:false
-module;test;tags;iterations;elapsed
-GitDiff.SimpleBench	parse diff		5000	1686554
