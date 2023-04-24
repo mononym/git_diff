@@ -1,0 +1,4 @@
+diff --git a/lib/mix/tasks/.DS_Store b/lib/mix/tasks/.DS_Store
+new file mode 100644
+index 0000000..5008ddf
+Binary files /dev/null and b/lib/mix/tasks/.DS_Store differ

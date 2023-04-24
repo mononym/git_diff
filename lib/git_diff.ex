@@ -243,27 +243,56 @@ defmodule GitDiff do
     patch =
       case header do
         "old mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "old mode", mode)}
+          %{
+            patch
+            | headers: Map.put(patch.headers, "old mode", mode),
+              from: maybe_relative_to(patch.headers["file_a"], state.relative_to)
+          }
 
         "new mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "new mode", mode)}
+          %{
+            patch
+            | headers: Map.put(patch.headers, "new mode", mode),
+              to: maybe_relative_to(patch.headers["file_b"], state.relative_to)
+          }
 
         "deleted file mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "deleted file mode", mode)}
+          %{
+            patch
+            | headers: Map.put(patch.headers, "deleted file mode", mode),
+              from: maybe_relative_to(patch.headers["file_a"], state.relative_to)
+          }
 
         "new file mode " <> mode ->
           %{
             patch
             | headers: Map.put(patch.headers, "new file mode", mode),
-              from: nil,
-              to: maybe_relative_to_rename("/" <> patch.headers["file_b"], state.relative_to)
+              to: maybe_relative_to(patch.headers["file_b"], state.relative_to)
           }
 
-        "copy from mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "copy from mode", mode)}
+        "copy from " <> file ->
+          %{
+            patch
+            | headers:
+                Map.put(
+                  patch.headers,
+                  "copy from",
+                  maybe_relative_to(file, state.relative_to)
+                ),
+              from: maybe_relative_to(file, state.relative_to)
+          }
 
-        "copy to mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "copy to mode", mode)}
+        "copy to " <> file ->
+          %{
+            patch
+            | headers:
+                Map.put(
+                  patch.headers,
+                  "copy to",
+                  maybe_relative_to(file, state.relative_to)
+                ),
+              from: maybe_relative_to(file, state.relative_to)
+          }
 
         "rename from " <> file ->
           %{
@@ -277,9 +306,6 @@ defmodule GitDiff do
               from: maybe_relative_to_rename(file, state.relative_from)
           }
 
-        "rename from mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "rename from mode", mode)}
-
         "rename to " <> file ->
           %{
             patch
@@ -291,9 +317,6 @@ defmodule GitDiff do
                 ),
               to: maybe_relative_to_rename(file, state.relative_to)
           }
-
-        "rename to mode " <> mode ->
-          %{patch | headers: Map.put(patch.headers, "rename to mode", mode)}
 
         "similarity index " <> number ->
           %{patch | headers: Map.put(patch.headers, "similarity index", number)}
@@ -350,7 +373,7 @@ defmodule GitDiff do
   defp maybe_relative_to(path, relative), do: Path.relative_to(path, relative)
 
   defp maybe_relative_to_rename(path, nil), do: path
-  defp maybe_relative_to_rename(path, relative), do: Path.relative_to(path, "/" <> relative)
+  defp maybe_relative_to_rename(path, relative), do: Path.relative_to(Path.relative(path), relative)
 
   defp split_diff(diff) do
     chunk_fun = fn line, lines ->

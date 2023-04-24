@@ -1,0 +1,4 @@
+diff --git a/tmp/foo/package-makeup_elixir-0.16.0-CFBB3C72/hex_metadata.config b/tmp/foo/package-makeup_elixir-0.16.1-A16A070A/hex_metadata.config
+index cf669b9..e15df8f 100644
+--- a/tmp/foo/package-makeup_elixir-0.16.0-CFBB3C72/hex_metadata.config
++++ b/tmp/foo/package-makeup_elixir-0.16.1-A16A070A/hex_metadata.config
